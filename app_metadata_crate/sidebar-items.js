@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CustomSection","Custom section."],["Error","Deserialization/serialization error"],["Module","Represents WebAssembly module. Use new to build from buffer."]]});

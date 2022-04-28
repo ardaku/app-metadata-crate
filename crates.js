@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["app_metadata_crate","parity_wasm","proc_macro2","quote","syn","thiserror","thiserror_impl","unicode_xid"];
