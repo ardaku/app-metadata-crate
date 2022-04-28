@@ -4,10 +4,12 @@ pub use parity_wasm::elements::CustomSection;
 use parity_wasm::{elements::Serialize, *};
 use thiserror::Error;
 
+///Deserialization/serialization error
 #[derive(Error, Debug)]
-#[error("Couldn't deserialize buffer into Module")]
+#[error(transparent)]
 pub struct Error(#[from] elements::Error);
 
+/// Represents WebAssembly module. Use new to build from buffer.
 pub struct Module(elements::Module);
 
 impl Module {
