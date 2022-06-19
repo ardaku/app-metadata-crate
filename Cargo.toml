@@ -1,9 +1,31 @@
+# Copyright © 2022 The Nucleide Contributors.
+#
+# Licensed under any of:
+#  - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+#  - Boost Software License, Version 1.0 (https://www.boost.org/LICENSE_1_0.txt)
+#  - MIT License (https://mit-license.org/)
+# At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
+# LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
+
 [package]
 name = "nucleide"
 version = "0.0.1"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A crate to manipulate custom sections of a WebAssembly module to view/edit application metadata."
+license = "Apache-2.0 OR BSL-1.0 OR MIT"
+documentation = "https://docs.rs/nucleide"
+homepage = "https://github.com/ardaku/nucleide/blob/stable/CHANGELOG.md"
+repository = "https://github.com/ardaku/nucleide/"
+include = ["src/", "README.md"]
+keywords = ["metadata", "quantii", "quanta", "app", "info"]
+categories = [
+    "development-tools::build-utils",
+    "os",
+    "parser-implementations",
+    "value-formatting",
+    "wasm",
+]
+readme = "README.md"
 
 [dependencies]
 parity-wasm = "0.42"
