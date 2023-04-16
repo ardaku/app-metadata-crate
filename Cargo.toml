@@ -11,13 +11,16 @@
 name = "nucleide"
 version = "0.0.1"
 edition = "2021"
-description = "A crate to manipulate custom sections of a WebAssembly module to view/edit application metadata."
+description = """
+A crate to manipulate custom sections of a WebAssembly module to view/edit
+application metadata.
+"""
 license = "Apache-2.0 OR BSL-1.0 OR MIT"
 documentation = "https://docs.rs/nucleide"
 homepage = "https://github.com/ardaku/nucleide/blob/stable/CHANGELOG.md"
 repository = "https://github.com/ardaku/nucleide/"
 include = ["src/", "README.md"]
-keywords = ["metadata", "quantii", "quanta", "app", "info"]
+keywords = ["metadata", "quantii", "daku", "app", "nucleic"]
 categories = [
     "development-tools::build-utils",
     "os",
@@ -28,5 +31,5 @@ categories = [
 readme = "README.md"
 
 [dependencies]
-parity-wasm = "0.42"
+parity-wasm = "0.45"
 thiserror = "1.0"
