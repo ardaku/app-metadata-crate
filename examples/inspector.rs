@@ -2,16 +2,39 @@ use std::collections::HashMap;
 
 use nucleide::Module;
 
-/// Producer 
+/// Versioned software name
 #[derive(Debug)]
-struct Producer {
-    name: String,
-    version: String,
+pub struct VersionedSoftware<'a> {
+    /// Name of the program/application/tool
+    pub name: &'a str,
+    /// Version of the program/application/tool
+    pub version: &'a str,
+}
+
+/// List from
+/// <https://github.com/WebAssembly/tool-conventions/blob/main/ProducersSection.md>
+#[derive(Debug)]
+pub enum ProducerKind {
+    /// Source language list
+    Language,
+    /// Individual tool list
+    ProcessedBy,
+    /// SDK list
+    Sdk,
+}
+
+/// Producer Field
+#[derive(Debug)]
+pub struct Producer<'a> {
+    /// Kind of the list
+    pub kind: ProducerKind,
+    /// List of versioned names
+    pub list: Vec<VersionedSoftware<'a>>,
 }
 
 /// Name subsection
 #[derive(Debug)]
-enum Name {
+pub enum Name {
     /// Module Name
     Module(String),
     /// Function Names
@@ -94,13 +117,49 @@ fn decode_uleb128_u32(data: &[u8]) -> Option<(&[u8], u32)> {
 fn producers(data: &[u8]) -> Option<Vec<Producer>> {
     let mut producers = Vec::new();
 
-    let (data, len) = decode_uleb128_u32(data)?;
+    let (mut data, len) = decode_uleb128_u32(data)?;
 
     for _ in 0..len {
+        let len;
+        (data, len) = decode_uleb128_u32(data)?;
+        let len = usize::try_from(len).ok()?;
+        let field = std::str::from_utf8(data.get(..len)?).ok()?;
+        data = data.get(len..)?;
+
+        //
+        let kind = match field {
+            "language" => ProducerKind::Language,
+            "processed-by" => ProducerKind::ProcessedBy,
+            "sdk" => ProducerKind::Sdk,
+            _ => return None,
+        };
+
+        let len;
+        (data, len) = decode_uleb128_u32(data)?;
+        let len = usize::try_from(len).ok()?;
+
+        let mut software = Vec::new();
+
+        for _ in 0..len {
+            let len;
+            (data, len) = decode_uleb128_u32(data)?;
+            let len = usize::try_from(len).ok()?;
+            let name = std::str::from_utf8(data.get(..len)?).ok()?;
+            data = data.get(len..)?;
+
+            let len;
+            (data, len) = decode_uleb128_u32(data)?;
+            let len = usize::try_from(len).ok()?;
+            let version = std::str::from_utf8(data.get(..len)?).ok()?;
+            data = data.get(len..)?;
+
+            software.push(VersionedSoftware { name, version });
+        }
+
         producers.push(Producer {
-            name: String::new(),
-            version: String::new(),
-        });
+            kind,
+            list: software,
+        })
     }
 
     Some(producers)
@@ -301,19 +360,21 @@ fn main() {
         match &*section.name {
             name if name.starts_with(".debug_") => {
                 println!("Skipping DWARF Debug Data Section: {name}")
-            },
+            }
             "name" => {
                 println!("Name:");
                 for name in names(&section.data).expect("Failed to parse") {
                     println!(" - {name:?}");
                 }
             }
-            "producers" => { // FIXME: Must appear after name section
+            "producers" => {
+                // FIXME: Must appear after name section
                 println!("Producers");
-                for field in producers(&section.data).expect("Failed to parse") {
+                for field in producers(&section.data).expect("Failed to parse")
+                {
                     println!(" - {field:?}");
                 }
-            },
+            }
             _ => println!("Skipping Unknown Custom Section: {}", section.name),
         }
     }
