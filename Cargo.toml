@@ -1,4 +1,4 @@
-# Copyright © 2022 The Nucleide Contributors.
+# Copyright © 2022-2023 The Nucleide Contributors.
 #
 # Licensed under any of:
 #  - Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
@@ -30,6 +30,6 @@ categories = [
 ]
 readme = "README.md"
 
-[dependencies]
-parity-wasm = "0.45"
-thiserror = "1.0"
+[dependencies.parity-wasm]
+version = "0.45"
+default-features = false

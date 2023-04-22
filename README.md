@@ -55,6 +55,12 @@ module generated for easier debugging, but stripped away and put into a separate
 Daku programs are a WebAssembly module that must have the `daku` custom section,
 are compressed with ZStd, and should use the `.daku` file extension.
 
+ - `subsection: u8`: Each subsection is optional, and must be placed in this
+   order:
+   - 0 => Portal ID List
+ - `size: u32`: Number of bytes
+
+#### 0 => Portal ID List
  - `size: u32`: Number of portals
  - `data: [u32]`: List of portal IDs
 
@@ -65,8 +71,8 @@ are compressed with ZStd, and should use the `.daku` file extension.
    - 1 => Localized App Name (Localization map, see below)
    - 2 => App Icon Full Color (Concatenated list of [RVG] or [QOI] at different
      resolutions)
-   - 3 => App Icon Reduced Colors (Concatenated list of [RVG] or [QOI] at
-     different resolutions)
+   - 3 => App Icon 3 Colors + Transparency (Concatenated list of [RVG] or [QOI]
+     at different resolutions)
  - `size: u32`: Number of bytes
 
 #### Map
