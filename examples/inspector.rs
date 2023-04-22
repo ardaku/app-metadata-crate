@@ -7,6 +7,6 @@ fn main() {
 
     for section in Module::new(BYTES).expect("Bad WASM file").custom_sections()
     {
-        println!("{}", section.name());
+        println!("{}", section.name);
     }
 }

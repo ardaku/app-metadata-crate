@@ -7,14 +7,12 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-#![doc = include_str!("../README.md")]
-#![no_std]
+use alloc::borrow::Cow;
 
-extern crate alloc;
-
-mod daku;
-mod error;
-mod module;
-mod section;
-
-pub use self::{daku::Daku, error::Error, module::Module, section::Section};
+/// Custom section
+pub struct Section<'a> {
+    /// The name of the custom section
+    pub name: Cow<'a, str>,
+    /// Data in the custom section
+    pub data: Cow<'a, [u8]>,
+}
