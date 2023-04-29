@@ -173,13 +173,13 @@ A `Vector` (limit 2), with each element containing:
      spreadsheets
    - `system` - Applications for inspecting the operating system, tweaking,
      installing, and virtualization
-   - `coding` - Applications for computer programming, math, related tools
+   - `hacking` - Applications for computer programming, math, related tools
    - `cloud` - Applications for browsing the web, peer-to-peer file sharing,
      email, social media, etc.
    - `gaming` - Applications for playing video games
    - `science` - Applications for simulations, electrical/mechanical
      engineering, A/I for inspecting data, robots
-   - `learning` - Applications for education
+   - `education` - Applications for education, learning
    - `life` - Applications to-do lists, calendar, wellbeing, fitness,
      directions, mapping, weather, etc.
    - `finance` - Applications for coupons, buying/selling, trading, currency
