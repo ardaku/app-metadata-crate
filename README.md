@@ -88,6 +88,27 @@ module generated for easier debugging, but stripped away and put into a separate
 #### 2 => Local Names
  - `indirect_name_map: IndirectNameMap`: Names of each variable in each function
 
+#### 3 => Ext: Label Names
+ - `indirect_name_map: IndirectNameMap`: Names of each label in each function
+
+#### 4 => Ext: Type Names
+ - `name_map: NameMap`: Names of each type
+
+#### 5 => Ext: Table Names
+ - `name_map: NameMap`: Names of each table
+
+#### 6 => Ext: Memory Names
+ - `name_map: NameMap`: Names of each memory
+
+#### 7 => Ext: Global Names
+ - `name_map: NameMap`: Names of each global
+
+#### 8 => Ext: Element Names
+ - `name_map: NameMap`: Names of each element
+
+#### 9 => Ext: Data Names
+ - `name_map: NameMap`: Names of each data
+
 ### Producers (`producers`)
 From WebAssembly's [tool conventions], information on how the `.daku`
 WebAssembly file was generated.
@@ -173,15 +194,15 @@ A `Vector` (limit 2), with each element containing:
      spreadsheets
    - `system` - Applications for inspecting the operating system, tweaking,
      installing, and virtualization
-   - `hacking` - Applications for computer programming, math, related tools
-   - `cloud` - Applications for browsing the web, peer-to-peer file sharing,
+   - `coding` - Applications for software development, math, related tools
+   - `internet` - Applications for browsing the web, peer-to-peer file sharing,
      email, social media, etc.
    - `gaming` - Applications for playing video games
    - `science` - Applications for simulations, electrical/mechanical
      engineering, A/I for inspecting data, robots
    - `education` - Applications for education, learning
    - `life` - Applications to-do lists, calendar, wellbeing, fitness,
-     directions, mapping, weather, etc.
+     directions, mapping, weather, smart home, etc.
    - `finance` - Applications for coupons, buying/selling, trading, currency
 
 #### 7 => Organization Name
