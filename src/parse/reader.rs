@@ -7,6 +7,7 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
+use alloc::collections::BTreeMap;
 use core::str;
 
 /// Reads from a buffer.
@@ -25,7 +26,7 @@ impl<'a> Reader<'a> {
 
         let value = self.subslice(SIZE)?;
 
-        value.get(0).copied()
+        value.first().copied()
     }
 
     /// Parse the next little-endian `u16`
@@ -105,6 +106,30 @@ impl<'a> Reader<'a> {
         let len = self.uleb128()?.try_into().ok()?;
 
         self.str(len)
+    }
+
+    /// Parse a WebAssembly "Name Map"
+    pub fn name_map(&mut self) -> Option<BTreeMap<u32, &'a str>> {
+        let mut name_map = BTreeMap::new();
+
+        for _ in 0..self.uleb128()? {
+            name_map.insert(self.uleb128()?, self.name()?);
+        }
+
+        Some(name_map)
+    }
+
+    /// Parse a WebAssembly "Indirect Name Map"
+    pub fn indirect_name_map(
+        &mut self,
+    ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>> {
+        let mut indirect_name_map = BTreeMap::new();
+
+        for _ in 0..self.uleb128()? {
+            indirect_name_map.insert(self.uleb128()?, self.name_map()?);
+        }
+
+        Some(indirect_name_map)
     }
 
     fn subslice(&mut self, size: usize) -> Option<&'a [u8]> {

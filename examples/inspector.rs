@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use nucleide::{
     parse::{Reader, UInt, Writer},
@@ -37,27 +37,27 @@ pub struct Producer<'a> {
 
 /// Name subsection
 #[derive(Debug)]
-pub enum Name {
+pub enum Name<'a> {
     /// Module Name
-    Module(String),
+    Module(&'a str),
     /// Function Names
-    Function(HashMap<u32, String>),
+    Function(BTreeMap<u32, &'a str>),
     /// Local Names Per Function
-    Local(HashMap<u32, HashMap<u32, String>>),
+    Local(BTreeMap<u32, BTreeMap<u32, &'a str>>),
     /// Ext: Goto/Loop Label Names Per Function
-    Label(HashMap<u32, HashMap<u32, String>>),
+    Label(BTreeMap<u32, BTreeMap<u32, &'a str>>),
     /// Ext: Type Names
-    Type(HashMap<u32, String>),
+    Type(BTreeMap<u32, &'a str>),
     /// Ext: Table Names
-    Table(HashMap<u32, String>),
+    Table(BTreeMap<u32, &'a str>),
     /// Ext: Memory Names
-    Memory(HashMap<u32, String>),
+    Memory(BTreeMap<u32, &'a str>),
     /// Ext: Global Names
-    Global(HashMap<u32, String>),
+    Global(BTreeMap<u32, &'a str>),
     /// Ext: Element Names
-    Element(HashMap<u32, String>),
+    Element(BTreeMap<u32, &'a str>),
     /// Ext: Data Names
-    Data(HashMap<u32, String>),
+    Data(BTreeMap<u32, &'a str>),
 }
 
 fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
@@ -88,21 +88,11 @@ fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
     Some(producers)
 }
 
-fn parse_name_map(reader: &mut Reader<'_>) -> Option<HashMap<u32, String>> {
-    let mut name_map = HashMap::new();
-
-    for _ in 0..reader.uleb128()? {
-        name_map.insert(reader.uleb128()?, reader.name()?.to_string());
-    }
-
-    Some(name_map)
-}
-
 fn parse_usize(reader: &mut Reader<'_>) -> Option<usize> {
     Some(reader.uleb128()?.try_into().ok()?)
 }
 
-fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
+fn names<'a>(reader: &mut Reader<'a>) -> Option<Vec<Name<'a>>> {
     let mut names = Vec::new();
 
     // Get first byte, subsection kind
@@ -115,7 +105,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 0 {
         len = parse_usize(reader)?;
-        names.push(Name::Module(reader.name()?.to_string()));
+        names.push(Name::Module(reader.name()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -126,8 +116,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 1 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Function(name_map));
+        names.push(Name::Function(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -138,8 +127,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 2 {
         len = parse_usize(reader)?;
-        // *data = data.get(len..)?; // FIXME
-        names.push(Name::Local(HashMap::new()));
+        names.push(Name::Local(reader.indirect_name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -150,8 +138,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 3 {
         len = parse_usize(reader)?;
-        // *data = data.get(len..)?; // FIXME
-        names.push(Name::Label(HashMap::new()));
+        names.push(Name::Label(reader.indirect_name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -162,8 +149,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 4 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Type(name_map));
+        names.push(Name::Type(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -174,8 +160,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 5 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Table(name_map));
+        names.push(Name::Table(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -186,8 +171,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 6 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Memory(name_map));
+        names.push(Name::Memory(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -198,8 +182,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 7 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Global(name_map));
+        names.push(Name::Global(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -210,8 +193,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 8 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Element(name_map));
+        names.push(Name::Element(reader.name_map()?));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -222,8 +204,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 9 {
         len = parse_usize(reader)?;
-        let name_map = parse_name_map(reader)?;
-        names.push(Name::Data(name_map));
+        names.push(Name::Data(reader.name_map()?));
 
         let Some(_new_subsection) = reader.u8() else {
             return Some(names);
@@ -255,24 +236,18 @@ fn main() {
                             println!(" - Module {name:?}");
                         }
                         Name::Function(names) => {
-                            let mut names = names.iter().collect::<Vec<_>>();
-                            names.sort();
                             println!(" - Function");
                             for (id, name) in names {
                                 println!("   - {id}; {name}");
                             }
                         }
                         Name::Global(names) => {
-                            let mut names = names.iter().collect::<Vec<_>>();
-                            names.sort();
                             println!(" - Global");
                             for (id, name) in names {
                                 println!("   - {id}; {name}");
                             }
                         }
                         Name::Data(names) => {
-                            let mut names = names.iter().collect::<Vec<_>>();
-                            names.sort();
                             println!(" - Data");
                             for (id, name) in names {
                                 println!("   - {id}; {name}");
