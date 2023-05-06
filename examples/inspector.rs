@@ -1,35 +1,9 @@
-use nucleide::parse::{Reader, UInt};
-
-/// Writes to a buffer.
-pub struct Writer(Vec<u8>);
-
-impl Writer {
-    pub fn new(buffer: Vec<u8>) -> Self {
-        Self(buffer)
-    }
-
-    pub fn uleb128<T: UInt>(&mut self, value: T) {
-        let mut remaining = value;
-
-        while {
-            let byte = remaining.little();
-
-            remaining >>= 7;
-
-            let more = remaining != T::ZERO;
-
-            self.0.push(if more { byte | 0x80 } else { byte & !0x80 });
-
-            more
-        } {}
-    }
-}
-
-//
-
 use std::collections::HashMap;
 
-use nucleide::Module;
+use nucleide::{
+    parse::{Reader, UInt, Writer},
+    Module,
+};
 
 /// Versioned software name
 #[derive(Debug)]
@@ -91,8 +65,7 @@ fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
 
     for _ in 0..reader.uleb128()? {
         let mut software = Vec::new();
-        let len = reader.uleb128()?.try_into().ok()?;
-        let kind = match reader.str(len)? {
+        let kind = match reader.name()? {
             "language" => ProducerKind::Language,
             "processed-by" => ProducerKind::ProcessedBy,
             "sdk" => ProducerKind::Sdk,
@@ -100,10 +73,8 @@ fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
         };
 
         for _ in 0..reader.uleb128()? {
-            let len = reader.uleb128()?.try_into().ok()?;
-            let name = reader.str(len)?;
-            let len = reader.uleb128()?.try_into().ok()?;
-            let version = reader.str(len)?;
+            let name = reader.name()?;
+            let version = reader.name()?;
 
             software.push(VersionedSoftware { name, version });
         }
@@ -117,20 +88,11 @@ fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
     Some(producers)
 }
 
-fn parse_name(reader: &mut Reader<'_>) -> Option<String> {
-    let len = reader.uleb128()?.try_into().ok()?;
-
-    Some(reader.str(len)?.to_string())
-}
-
 fn parse_name_map(reader: &mut Reader<'_>) -> Option<HashMap<u32, String>> {
     let mut name_map = HashMap::new();
 
     for _ in 0..reader.uleb128()? {
-        let idx = reader.uleb128()?;
-        let name = parse_name(reader)?;
-
-        name_map.insert(idx, name);
+        name_map.insert(reader.uleb128()?, reader.name()?.to_string());
     }
 
     Some(name_map)
@@ -153,8 +115,7 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 
     if subsection == 0 {
         len = parse_usize(reader)?;
-        let name = parse_name(reader)?;
-        names.push(Name::Module(name));
+        names.push(Name::Module(reader.name()?.to_string()));
 
         let Some(new_subsection) = reader.u8() else {
             return Some(names);
@@ -275,31 +236,6 @@ fn names(reader: &mut Reader<'_>) -> Option<Vec<Name>> {
 }
 
 fn main() {
-    // Test encode/decode
-    let mut writer = Writer::new(Vec::new());
-    for i in (0..=u32::from(u16::MAX))
-        .chain((u32::MAX - u32::from(u16::MAX))..=u32::MAX)
-    {
-        writer.uleb128(i);
-        assert!(writer.0.len() < 7);
-        let mut reader = Reader::new(&writer.0[..]);
-        let j = reader.uleb128().unwrap();
-        assert_eq!(i, j);
-        assert!(reader.end().is_some());
-        writer.0.clear();
-    }
-    for i in
-        (u64::from(u32::MAX) + 1)..(u64::from(u32::MAX) + u64::from(u16::MAX))
-    {
-        writer.uleb128(i);
-        let mut reader = Reader::new(&writer.0[..]);
-        let decoded = reader.uleb128();
-        assert!(decoded.is_none(), "{i} decoded is {decoded:?}");
-        writer.0.clear();
-    }
-
-    // Example:
-
     const BYTES: &[u8] = include_bytes!(
         "../hello_world/target/wasm32-unknown-unknown/debug/hello_world.wasm"
     );

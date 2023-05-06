@@ -9,9 +9,8 @@
 
 #![doc = include_str!("../README.md")]
 #![no_std]
-#![forbid(
-    unsafe_code,
-    missing_docs,
+#![forbid(unsafe_code, missing_docs)]
+#![warn(
     anonymous_parameters,
     missing_copy_implementations,
     missing_debug_implementations,

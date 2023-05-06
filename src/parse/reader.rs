@@ -64,7 +64,7 @@ impl<'a> Reader<'a> {
         Some(u128::from_le_bytes(value.get(..SIZE)?.try_into().ok()?))
     }
 
-    /// Parse the next uleb128 value
+    /// Parse the next ULEB128 value
     pub fn uleb128(&mut self) -> Option<u32> {
         let mut value = 0;
         let mut shift = 0;
@@ -98,6 +98,13 @@ impl<'a> Reader<'a> {
     /// Return `Some(())` if end of buffer.
     pub fn end(&self) -> Option<()> {
         self.0.is_empty().then_some(())
+    }
+
+    /// Parse a WebAssembly "Name".
+    pub fn name(&mut self) -> Option<&'a str> {
+        let len = self.uleb128()?.try_into().ok()?;
+
+        self.str(len)
     }
 
     fn subslice(&mut self, size: usize) -> Option<&'a [u8]> {

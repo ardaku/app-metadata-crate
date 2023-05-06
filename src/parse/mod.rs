@@ -11,8 +11,10 @@
 
 mod num;
 mod reader;
+mod writer;
 
 pub use self::{
     num::{Number, UInt},
     reader::Reader,
+    writer::Writer,
 };
