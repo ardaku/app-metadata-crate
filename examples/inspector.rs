@@ -165,21 +165,52 @@ fn producers(data: &[u8]) -> Option<Vec<Producer>> {
     Some(producers)
 }
 
+fn parse_name(data: &[u8]) -> Option<(&[u8], String)> {
+    let (data, len) = decode_uleb128_u32(data)?;
+    let len = usize::try_from(len).ok()?;
+    let name = std::str::from_utf8(data.get(..len)?).ok()?.to_string();
+
+    Some((&data[len..], name))
+}
+
+fn parse_name_map(data: &[u8]) -> Option<(&[u8], HashMap<u32, String>)> {
+    let mut name_map = HashMap::new();
+    let (mut data, len) = decode_uleb128_u32(data)?;
+
+    for _ in 0..len {
+        let (idx, name);
+        (data, idx) = decode_uleb128_u32(data)?;
+        (data, name) = parse_name(data)?;
+        name_map.insert(idx, name);
+    }
+
+    Some((data, name_map))
+}
+
+fn parse_usize(data: &[u8]) -> Option<(&[u8], usize)> {
+    let (data, len) = decode_uleb128_u32(data)?;
+    
+    Some((data, usize::try_from(len).ok()?))
+}
+
 fn names(data: &[u8]) -> Option<Vec<Name>> {
     let mut names = Vec::new();
 
+    // Get first byte, subsection kind
     let Some(mut subsection) = data.first().cloned() else {
         return Some(names);
     };
     let mut data = data.get(1..)?;
 
-    if subsection == 0 {
-        names.push(Name::Module("".to_string()));
+    // Get integer, length of subsection
+    let mut len;
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
+    if subsection == 0 {
+        (data, len) = parse_usize(data)?;
+        let name;
+        (data, name) = parse_name(data)?;
+        names.push(Name::Module(name));
+
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -189,12 +220,10 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 1 {
-        names.push(Name::Function(HashMap::new()));
-
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Function(name_map));
 
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
@@ -203,14 +232,12 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
         subsection = new_subsection;
         data = data.get(1..)?;
     }
-
+        
     if subsection == 2 {
+        (data, len) = parse_usize(data)?;
+        data = data.get(len..)?;
         names.push(Name::Local(HashMap::new()));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -220,12 +247,10 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 3 {
+        (data, len) = parse_usize(data)?;
+        data = data.get(len..)?;
         names.push(Name::Label(HashMap::new()));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -235,12 +260,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 4 {
-        names.push(Name::Type(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Type(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -250,12 +274,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 5 {
-        names.push(Name::Table(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Table(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -265,12 +288,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 6 {
-        names.push(Name::Memory(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Memory(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -280,12 +302,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 7 {
-        names.push(Name::Global(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Global(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -295,12 +316,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 8 {
-        names.push(Name::Element(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Element(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -310,12 +330,11 @@ fn names(data: &[u8]) -> Option<Vec<Name>> {
     }
 
     if subsection == 9 {
-        names.push(Name::Data(HashMap::new()));
+        (data, len) = parse_usize(data)?;
+        let name_map;
+        (data, name_map) = parse_name_map(data)?;
+        names.push(Name::Data(name_map));
 
-        let len;
-        (data, len) = decode_uleb128_u32(data)?;
-        let len = usize::try_from(len).ok()?;
-        data = data.get(len..)?;
         let Some(_new_subsection) = data.first().cloned() else {
             return Some(names);
         };
@@ -364,7 +383,36 @@ fn main() {
             "name" => {
                 println!("Name:");
                 for name in names(&section.data).expect("Failed to parse") {
-                    println!(" - {name:?}");
+                    match name {
+                        Name::Module(name) => {
+                            println!(" - Module {name:?}");
+                        }
+                        Name::Function(names) => {
+                            let mut names = names.iter().collect::<Vec<_>>();
+                            names.sort();
+                            println!(" - Function");
+                            for (id, name) in names {
+                                println!("   - {id}; {name}");
+                            }
+                        }
+                        Name::Global(names) => {
+                            let mut names = names.iter().collect::<Vec<_>>();
+                            names.sort();
+                            println!(" - Global");
+                            for (id, name) in names {
+                                println!("   - {id}; {name}");
+                            }
+                        }
+                        Name::Data(names) => {
+                            let mut names = names.iter().collect::<Vec<_>>();
+                            names.sort();
+                            println!(" - Data");
+                            for (id, name) in names {
+                                println!("   - {id}; {name}");
+                            }
+                        }
+                        _ => println!(" - {name:?}"),
+                    }
                 }
             }
             "producers" => {
