@@ -9,12 +9,12 @@
 
 use alloc::{string::String, vec::Vec};
 
-pub use parity_wasm::elements::CustomSection;
-use parity_wasm::elements::{self, Serialize};
+use parity_wasm::elements::{self, CustomSection, Serialize};
 
-pub use crate::{Daku, Error, Section};
+use crate::{Error, Section};
 
 /// Represents WebAssembly module. Use new to build from buffer.
+#[derive(Debug)]
 pub struct Module(elements::Module);
 
 impl Module {
@@ -50,13 +50,14 @@ impl Module {
         self.0.clear_custom_section(name)
     }
 
+    /// Write out module to a `Vec` of bytes.
     pub fn into_buffer(self) -> Result<Vec<u8>, Error> {
         let mut v = Vec::new();
         self.0.serialize(&mut v)?;
         Ok(v)
     }
 
-    #[allow(unused)] // FIXME
+    #[allow(dead_code)] // FIXME
     fn daku_section(&self) -> Option<Section<'_>> {
         self.custom_sections()
             .find(|section| section.name == "daku")

@@ -55,7 +55,9 @@ impl<T> Number for T where
 
 /// Trait implemented for unsigned integers
 pub trait UInt: Number + From<u8> + Copy + Clone {
+    /// The minimum value of an unsigned integer, 0
     const ZERO: Self;
+    /// Size of the primitive, in bits
     const BITS: u8;
 
     /// Grab the little byte.

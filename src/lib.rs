@@ -9,13 +9,29 @@
 
 #![doc = include_str!("../README.md")]
 #![no_std]
+#![forbid(
+    unsafe_code,
+    missing_docs,
+    anonymous_parameters,
+    missing_copy_implementations,
+    missing_debug_implementations,
+    nonstandard_style,
+    rust_2018_idioms,
+    single_use_lifetimes,
+    trivial_casts,
+    trivial_numeric_casts,
+    unreachable_pub,
+    unused_extern_crates,
+    unused_qualifications,
+    variant_size_differences
+)]
 
 extern crate alloc;
 
 mod daku;
 mod error;
 mod module;
-mod section;
 pub mod parse;
+mod section;
 
 pub use self::{daku::Daku, error::Error, module::Module, section::Section};

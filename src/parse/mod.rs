@@ -10,8 +10,9 @@
 //! Utilities to help parse custom sections.
 
 mod num;
+mod reader;
 
-pub use self::num::{
-    UInt,
-    Number,
+pub use self::{
+    num::{Number, UInt},
+    reader::Reader,
 };

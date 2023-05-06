@@ -15,6 +15,7 @@ use alloc::{
 use crate::Section;
 
 /// Daku custom section; an iterator over a list of portals.
+#[derive(Debug)]
 pub struct Daku<'a>(pub(super) Cow<'a, [u8]>);
 
 impl Daku<'static> {

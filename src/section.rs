@@ -10,6 +10,7 @@
 use alloc::borrow::Cow;
 
 /// Custom section
+#[derive(Debug)]
 pub struct Section<'a> {
     /// The name of the custom section
     pub name: Cow<'a, str>,
