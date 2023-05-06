@@ -146,7 +146,7 @@ Integer representation of a 4-letter (2-letter lowercase language, 2-letter
 uppercase region) locale ASCII description:
 
  - `locale: b"enUS"`
-   ```rust
+   ```C
    locale[0] | locale[1] << 7 | locale[2] << 14 | locale[3] << 21
    ```
 
@@ -158,7 +158,7 @@ Integer representation of a 4-letter (2-letter lowercase language, 2-letter
 uppercase region) locale ASCII description:
 
  - `locale: b"enUS"`
-   ```rust
+   ```C
    locale[0] | locale[1] << 7 | locale[2] << 14 | locale[3] << 21
    ```
 

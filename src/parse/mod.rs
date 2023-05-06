@@ -6,16 +6,12 @@
 // - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
+//
+//! Utilities to help parse custom sections.
 
-#![doc = include_str!("../README.md")]
-#![no_std]
+mod num;
 
-extern crate alloc;
-
-mod daku;
-mod error;
-mod module;
-mod section;
-pub mod parse;
-
-pub use self::{daku::Daku, error::Error, module::Module, section::Section};
+pub use self::num::{
+    UInt,
+    Number,
+};
