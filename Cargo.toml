@@ -30,6 +30,9 @@ categories = [
 ]
 readme = "README.md"
 
+[dependencies.num_enum]
+version = "0.6"
+
 [dependencies.parity-wasm]
 version = "0.45"
 default-features = false

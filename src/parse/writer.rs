@@ -13,11 +13,11 @@ use crate::parse::UInt;
 
 /// Writes to a buffer.
 #[derive(Debug)]
-pub struct Writer(Vec<u8>);
+pub struct Writer<'a>(&'a mut Vec<u8>);
 
-impl Writer {
+impl<'a> Writer<'a> {
     /// Create a new `Writer` to the provided `buffer`.
-    pub fn new(buffer: Vec<u8>) -> Self {
+    pub fn new(buffer: &'a mut Vec<u8>) -> Self {
         Self(buffer)
     }
 
@@ -46,7 +46,8 @@ mod tests {
 
     #[test]
     fn roundtrip() {
-        let mut writer = Writer::new(Vec::new());
+        let mut buffer = Vec::new();
+        let mut writer = Writer::new(&mut buffer);
         for i in (0..=u32::from(u16::MAX))
             .chain((u32::MAX - u32::from(u16::MAX))..=u32::MAX)
         {

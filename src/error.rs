@@ -7,14 +7,22 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
+use core::fmt;
+
 use parity_wasm::elements;
 
 /// Deserialization/serialization error
 #[derive(Debug)]
-pub struct Error(elements::Error);
+pub struct Error(pub(crate) elements::Error);
 
-impl From<elements::Error> for Error {
-    fn from(error: elements::Error) -> Error {
-        Self(error)
+impl Error {
+    pub(crate) fn with_msg(message: &'static str) -> Self {
+        Self(elements::Error::Other(message))
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        <elements::Error as fmt::Display>::fmt(&self.0, f)
     }
 }

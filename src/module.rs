@@ -20,7 +20,7 @@ pub struct Module(elements::Module);
 impl Module {
     /// Creates a Module from buffer.
     pub fn new(buf: &[u8]) -> Result<Self, Error> {
-        Ok(Module(elements::Module::from_bytes(buf)?))
+        Ok(Module(elements::Module::from_bytes(buf).map_err(Error)?))
     }
 
     /// Returns an iterator over the module’s custom sections.
@@ -53,7 +53,7 @@ impl Module {
     /// Write out module to a `Vec` of bytes.
     pub fn into_buffer(self) -> Result<Vec<u8>, Error> {
         let mut v = Vec::new();
-        self.0.serialize(&mut v)?;
+        self.0.serialize(&mut v).map_err(Error)?;
         Ok(v)
     }
 

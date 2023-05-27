@@ -1,64 +1,9 @@
-use std::collections::BTreeMap;
-
 use nucleide::{
+    name::Name,
     parse::{Reader, UInt, Writer},
+    producers::{Producer, ProducerKind, VersionedSoftware},
     Module,
 };
-
-/// Versioned software name
-#[derive(Debug)]
-pub struct VersionedSoftware<'a> {
-    /// Name of the program/application/tool
-    pub name: &'a str,
-    /// Version of the program/application/tool
-    pub version: &'a str,
-}
-
-/// List from
-/// <https://github.com/WebAssembly/tool-conventions/blob/main/ProducersSection.md>
-#[derive(Debug)]
-pub enum ProducerKind {
-    /// Source language list
-    Language,
-    /// Individual tool list
-    ProcessedBy,
-    /// SDK list
-    Sdk,
-}
-
-/// Producer Field
-#[derive(Debug)]
-pub struct Producer<'a> {
-    /// Kind of the list
-    pub kind: ProducerKind,
-    /// List of versioned names
-    pub list: Vec<VersionedSoftware<'a>>,
-}
-
-/// Name subsection
-#[derive(Debug)]
-pub enum Name<'a> {
-    /// Module Name
-    Module(&'a str),
-    /// Function Names
-    Function(BTreeMap<u32, &'a str>),
-    /// Local Names Per Function
-    Local(BTreeMap<u32, BTreeMap<u32, &'a str>>),
-    /// Ext: Goto/Loop Label Names Per Function
-    Label(BTreeMap<u32, BTreeMap<u32, &'a str>>),
-    /// Ext: Type Names
-    Type(BTreeMap<u32, &'a str>),
-    /// Ext: Table Names
-    Table(BTreeMap<u32, &'a str>),
-    /// Ext: Memory Names
-    Memory(BTreeMap<u32, &'a str>),
-    /// Ext: Global Names
-    Global(BTreeMap<u32, &'a str>),
-    /// Ext: Element Names
-    Element(BTreeMap<u32, &'a str>),
-    /// Ext: Data Names
-    Data(BTreeMap<u32, &'a str>),
-}
 
 fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
     let mut producers = Vec::new();

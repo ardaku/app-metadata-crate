@@ -27,10 +27,12 @@
 
 extern crate alloc;
 
-mod daku;
+pub mod daku;
 mod error;
 mod module;
+pub mod name;
 pub mod parse;
+pub mod producers;
 mod section;
 
-pub use self::{daku::Daku, error::Error, module::Module, section::Section};
+pub use self::{error::Error, module::Module, section::Section};
