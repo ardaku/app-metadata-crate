@@ -7,7 +7,6 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::collections::BTreeMap;
 use core::str;
 
 /// Reads from a buffer.
@@ -65,30 +64,6 @@ impl<'a> Reader<'a> {
         Some(u128::from_le_bytes(value.get(..SIZE)?.try_into().ok()?))
     }
 
-    /// Parse the next ULEB128 value
-    pub fn uleb128(&mut self) -> Option<u32> {
-        let mut value = 0;
-        let mut shift = 0;
-
-        while {
-            let byte = self.u8()?;
-
-            value |= u32::from(byte & 0x7f) << shift;
-            shift += 7;
-
-            let more = shift < u32::BITS;
-            let fits_u32 = more || byte < 16;
-
-            if byte & 0x80 == 0 && fits_u32 {
-                return Some(value);
-            }
-
-            more
-        } {}
-
-        None
-    }
-
     /// Parse a UTF-8 `String` of specified length
     pub fn str(&mut self, len: usize) -> Option<&'a str> {
         let bytes = self.subslice(len)?;
@@ -99,37 +74,6 @@ impl<'a> Reader<'a> {
     /// Return `Some(())` if end of buffer.
     pub fn end(&self) -> Option<()> {
         self.0.is_empty().then_some(())
-    }
-
-    /// Parse a WebAssembly "Name".
-    pub fn name(&mut self) -> Option<&'a str> {
-        let len = self.uleb128()?.try_into().ok()?;
-
-        self.str(len)
-    }
-
-    /// Parse a WebAssembly "Name Map"
-    pub fn name_map(&mut self) -> Option<BTreeMap<u32, &'a str>> {
-        let mut name_map = BTreeMap::new();
-
-        for _ in 0..self.uleb128()? {
-            name_map.insert(self.uleb128()?, self.name()?);
-        }
-
-        Some(name_map)
-    }
-
-    /// Parse a WebAssembly "Indirect Name Map"
-    pub fn indirect_name_map(
-        &mut self,
-    ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>> {
-        let mut indirect_name_map = BTreeMap::new();
-
-        for _ in 0..self.uleb128()? {
-            indirect_name_map.insert(self.uleb128()?, self.name_map()?);
-        }
-
-        Some(indirect_name_map)
     }
 
     fn subslice(&mut self, size: usize) -> Option<&'a [u8]> {

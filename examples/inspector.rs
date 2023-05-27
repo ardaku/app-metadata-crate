@@ -1,40 +1,39 @@
 use nucleide::{
     name::Name,
-    parse::{Reader, UInt, Writer},
+    parse::Reader,
     producers::{Producer, ProducerKind, VersionedSoftware},
+    wasm::Read as _,
     Module,
 };
 
 fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
-    let mut producers = Vec::new();
+    (0..reader.integer()?)
+        .map(|_| {
+            let kind = match reader.name()? {
+                "language" => ProducerKind::Language,
+                "processed-by" => ProducerKind::ProcessedBy,
+                "sdk" => ProducerKind::Sdk,
+                _ => return None,
+            };
+            let software = (0..reader.integer()?)
+                .map(|_| {
+                    Some(VersionedSoftware {
+                        name: reader.name()?,
+                        version: reader.name()?,
+                    })
+                })
+                .collect::<Option<_>>()?;
 
-    for _ in 0..reader.uleb128()? {
-        let mut software = Vec::new();
-        let kind = match reader.name()? {
-            "language" => ProducerKind::Language,
-            "processed-by" => ProducerKind::ProcessedBy,
-            "sdk" => ProducerKind::Sdk,
-            _ => return None,
-        };
-
-        for _ in 0..reader.uleb128()? {
-            let name = reader.name()?;
-            let version = reader.name()?;
-
-            software.push(VersionedSoftware { name, version });
-        }
-
-        producers.push(Producer {
-            kind,
-            list: software,
+            Some(Producer {
+                kind,
+                list: software,
+            })
         })
-    }
-
-    Some(producers)
+        .collect()
 }
 
 fn parse_usize(reader: &mut Reader<'_>) -> Option<usize> {
-    Some(reader.uleb128()?.try_into().ok()?)
+    Some(reader.integer()?.try_into().ok()?)
 }
 
 fn names<'a>(reader: &mut Reader<'a>) -> Option<Vec<Name<'a>>> {

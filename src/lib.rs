@@ -34,5 +34,6 @@ pub mod name;
 pub mod parse;
 pub mod producers;
 mod section;
+pub mod wasm;
 
 pub use self::{error::Error, module::Module, section::Section};
