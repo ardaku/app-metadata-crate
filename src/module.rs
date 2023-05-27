@@ -7,7 +7,7 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::{string::String, vec::Vec};
+use alloc::vec::Vec;
 
 use parity_wasm::elements::{self, CustomSection, Serialize};
 
@@ -33,12 +33,9 @@ impl Module {
 
     /// Sets the payload associated with the given custom section, or adds a new
     /// custom section, as appropriate.
-    pub fn add_custom_section(
-        &mut self,
-        name: impl Into<String>,
-        payload: Vec<u8>,
-    ) {
-        self.0.set_custom_section(name, payload)
+    pub fn set_custom_section(&mut self, section: Section<'_>) {
+        self.0
+            .set_custom_section(section.name, section.data.to_vec())
     }
 
     /// Removes the given custom section, if it exists. Returns the removed
