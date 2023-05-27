@@ -7,16 +7,12 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-mod seal {
-    pub trait Seal {}
-}
-
 use alloc::collections::BTreeMap;
 
-use crate::parse::Reader;
+use crate::{parse::Reader, seal::Seal};
 
 /// WebAssembly primitive reader methods
-pub trait Read<'a>: self::seal::Seal {
+pub trait Read<'a>: Seal {
     /// Parse the next ULEB128-encoded 32-bit unsigned integer.
     fn integer(&mut self) -> Option<u32>;
 
@@ -31,8 +27,6 @@ pub trait Read<'a>: self::seal::Seal {
         &mut self,
     ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>>;
 }
-
-impl self::seal::Seal for Reader<'_> {}
 
 impl<'a> Read<'a> for Reader<'a> {
     fn integer(&mut self) -> Option<u32> {

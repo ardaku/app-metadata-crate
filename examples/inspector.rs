@@ -1,36 +1,6 @@
 use nucleide::{
-    name::Name,
-    parse::Reader,
-    producers::{Producer, ProducerKind, VersionedSoftware},
-    wasm::Read as _,
-    Module,
+    name::Name, parse::Reader, producers::Read as _, wasm::Read as _, Module,
 };
-
-fn producers<'a>(reader: &mut Reader<'a>) -> Option<Vec<Producer<'a>>> {
-    (0..reader.integer()?)
-        .map(|_| {
-            let kind = match reader.name()? {
-                "language" => ProducerKind::Language,
-                "processed-by" => ProducerKind::ProcessedBy,
-                "sdk" => ProducerKind::Sdk,
-                _ => return None,
-            };
-            let software = (0..reader.integer()?)
-                .map(|_| {
-                    Some(VersionedSoftware {
-                        name: reader.name()?,
-                        version: reader.name()?,
-                    })
-                })
-                .collect::<Option<_>>()?;
-
-            Some(Producer {
-                kind,
-                list: software,
-            })
-        })
-        .collect()
-}
 
 fn parse_usize(reader: &mut Reader<'_>) -> Option<usize> {
     Some(reader.integer()?.try_into().ok()?)
@@ -205,7 +175,7 @@ fn main() {
                 // FIXME: Must appear after name section
                 println!("Producers");
                 let mut data = Reader::new(&section.data[..]);
-                for field in producers(&mut data).expect("Failed to parse") {
+                for field in data.producers().expect("Failed to parse") {
                     println!(" - {field:?}");
                 }
             }

@@ -6,15 +6,14 @@
 // - MIT License (https://mit-license.org/)
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
+
+use crate::parse::Reader;
+
+// Sealed trait to prevent third-party implementations of some public traits,
+// not exported publicly.
 //
-//! Custom conventional [producers] section.
-//!
-//! [producers]: https://github.com/WebAssembly/tool-conventions/blob/main/ProducersSection.md
+// This is not a doc comment so that `missing_docs` causes a compilation failure
+// if exported on accident.
+pub trait Seal {}
 
-mod producer;
-mod read;
-
-pub use self::{
-    producer::{Producer, ProducerKind, VersionedSoftware},
-    read::Read,
-};
+impl Seal for Reader<'_> {}

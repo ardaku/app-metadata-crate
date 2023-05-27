@@ -33,6 +33,7 @@ mod module;
 pub mod name;
 pub mod parse;
 pub mod producers;
+mod seal;
 mod section;
 pub mod wasm;
 
