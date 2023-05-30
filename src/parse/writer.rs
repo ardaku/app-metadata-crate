@@ -42,7 +42,7 @@ impl<'a> Writer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parse::Reader;
+    use crate::{parse::Reader, wasm::Read as _};
 
     #[test]
     fn roundtrip() {
@@ -54,7 +54,7 @@ mod tests {
             writer.uleb128(i);
             assert!(writer.0.len() < 7);
             let mut reader = Reader::new(&writer.0[..]);
-            let j = reader.uleb128().unwrap();
+            let j = reader.integer().unwrap();
             assert_eq!(i, j);
             assert!(reader.end().is_some());
             writer.0.clear();
@@ -64,7 +64,7 @@ mod tests {
         {
             writer.uleb128(i);
             let mut reader = Reader::new(&writer.0[..]);
-            let decoded = reader.uleb128();
+            let decoded = reader.integer();
             assert!(decoded.is_none(), "{i} decoded is {decoded:?}");
             writer.0.clear();
         }

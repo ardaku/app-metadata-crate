@@ -66,9 +66,12 @@ impl<'a> Reader<'a> {
 
     /// Parse a UTF-8 `String` of specified length
     pub fn str(&mut self, len: usize) -> Option<&'a str> {
-        let bytes = self.subslice(len)?;
+        str::from_utf8(self.subslice(len)?.get(..len)?).ok()
+    }
 
-        str::from_utf8(bytes.get(..len)?).ok()
+    /// Return a `Reader` that reads up to the specified length.
+    pub fn reader(&mut self, len: usize) -> Option<Self> {
+        Some(Self(self.subslice(len)?))
     }
 
     /// Return `Some(())` if end of buffer.

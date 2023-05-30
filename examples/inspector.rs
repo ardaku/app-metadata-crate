@@ -2,137 +2,45 @@ use nucleide::{
     name::Name, parse::Reader, producers::Read as _, wasm::Read as _, Module,
 };
 
-fn parse_usize(reader: &mut Reader<'_>) -> Option<usize> {
-    Some(reader.integer()?.try_into().ok()?)
+fn parse_subsection<'a>(reader: &mut Reader<'a>) -> Option<(u8, Reader<'a>)> {
+    let subsection = reader.u8()?;
+    let len = reader.integer()?.try_into().ok()?;
+
+    Some((subsection, reader.reader(len)?))
 }
 
 fn names<'a>(reader: &mut Reader<'a>) -> Option<Vec<Name<'a>>> {
     let mut names = Vec::new();
+    let mut subsection_min = 0;
 
-    // Get first byte, subsection kind
-    let Some(mut subsection) = reader.u8() else {
-        return Some(names);
-    };
+    while reader.end().is_none() {
+        let (subsection, mut reader) = parse_subsection(reader)?;
 
-    // Get integer, length of subsection
-    let mut len;
-
-    if subsection == 0 {
-        len = parse_usize(reader)?;
-        names.push(Name::Module(reader.name()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
+        // Must be ordered correctly
+        (subsection >= subsection_min).then_some(())?;
+        names.push(match subsection {
+            0 => Name::Module(reader.name()?),
+            1 => Name::Function(reader.name_map()?),
+            2 => Name::Local(reader.indirect_name_map()?),
+            3 => Name::Label(reader.indirect_name_map()?),
+            4 => Name::Type(reader.name_map()?),
+            5 => Name::Table(reader.name_map()?),
+            6 => Name::Memory(reader.name_map()?),
+            7 => Name::Global(reader.name_map()?),
+            8 => Name::Element(reader.name_map()?),
+            9 => Name::Data(reader.name_map()?),
+            _ => return None,
+        });
+        reader.end()?;
+        subsection_min = subsection + 1;
     }
 
-    if subsection == 1 {
-        len = parse_usize(reader)?;
-        names.push(Name::Function(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 2 {
-        len = parse_usize(reader)?;
-        names.push(Name::Local(reader.indirect_name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 3 {
-        len = parse_usize(reader)?;
-        names.push(Name::Label(reader.indirect_name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 4 {
-        len = parse_usize(reader)?;
-        names.push(Name::Type(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 5 {
-        len = parse_usize(reader)?;
-        names.push(Name::Table(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 6 {
-        len = parse_usize(reader)?;
-        names.push(Name::Memory(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 7 {
-        len = parse_usize(reader)?;
-        names.push(Name::Global(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 8 {
-        len = parse_usize(reader)?;
-        names.push(Name::Element(reader.name_map()?));
-
-        let Some(new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        subsection = new_subsection;
-    }
-
-    if subsection == 9 {
-        len = parse_usize(reader)?;
-        names.push(Name::Data(reader.name_map()?));
-
-        let Some(_new_subsection) = reader.u8() else {
-            return Some(names);
-        };
-
-        // subsection = new_subsection;
-    }
-
-    None
+    Some(names)
 }
 
 fn main() {
     const BYTES: &[u8] = include_bytes!(
-        "../hello_world/target/wasm32-unknown-unknown/debug/hello_world.wasm"
+        "../hello_world/target/wasm32-unknown-unknown/debug/hello_world.wasm",
     );
 
     for section in Module::new(BYTES).expect("Bad WASM file").custom_sections()
@@ -174,7 +82,7 @@ fn main() {
             "producers" => {
                 // FIXME: Must appear after name section
                 println!("Producers");
-                let mut data = Reader::new(&section.data[..]);
+                let mut data = Reader::new(section.data.get(..).unwrap());
                 for field in data.producers().expect("Failed to parse") {
                     println!(" - {field:?}");
                 }
