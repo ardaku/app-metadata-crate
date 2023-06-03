@@ -11,6 +11,7 @@
 //!
 //! [name]: https://webassembly.github.io/spec/core/appendix/custom.html#name-section
 
+mod read;
 mod section;
 
-pub use self::section::Name;
+pub use self::{read::Read, section::Name};
