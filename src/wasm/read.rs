@@ -26,6 +26,9 @@ pub trait Read<'a>: Seal {
     fn indirect_name_map(
         &mut self,
     ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>>;
+
+    /// Parse a WebAssembly "Subsection"
+    fn subsection(&mut self) -> Option<(u8, Reader<'a>)>;
 }
 
 impl<'a> Read<'a> for Reader<'a> {
@@ -78,5 +81,12 @@ impl<'a> Read<'a> for Reader<'a> {
         }
 
         Some(indirect_name_map)
+    }
+
+    fn subsection(&mut self) -> Option<(u8, Reader<'a>)> {
+        let subsection = self.u8()?;
+        let len = self.integer()?.try_into().ok()?;
+
+        Some((subsection, self.reader(len)?))
     }
 }

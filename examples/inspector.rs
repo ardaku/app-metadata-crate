@@ -2,19 +2,12 @@ use nucleide::{
     name::Name, parse::Reader, producers::Read as _, wasm::Read as _, Module,
 };
 
-fn parse_subsection<'a>(reader: &mut Reader<'a>) -> Option<(u8, Reader<'a>)> {
-    let subsection = reader.u8()?;
-    let len = reader.integer()?.try_into().ok()?;
-
-    Some((subsection, reader.reader(len)?))
-}
-
 fn names<'a>(reader: &mut Reader<'a>) -> Option<Vec<Name<'a>>> {
     let mut names = Vec::new();
     let mut subsection_min = 0;
 
     while reader.end().is_none() {
-        let (subsection, mut reader) = parse_subsection(reader)?;
+        let (subsection, mut reader) = reader.subsection()?;
 
         // Must be ordered correctly
         (subsection >= subsection_min).then_some(())?;
