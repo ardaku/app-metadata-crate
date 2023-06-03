@@ -16,6 +16,7 @@ use parity_wasm::elements;
 pub struct Error(pub(crate) elements::Error);
 
 impl Error {
+    #[allow(dead_code)] // FIXME
     pub(crate) fn with_msg(message: &'static str) -> Self {
         Self(elements::Error::Other(message))
     }

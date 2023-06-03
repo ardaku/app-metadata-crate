@@ -7,7 +7,7 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use crate::parse::Reader;
+use crate::parse::{Reader, Writer};
 
 // Sealed trait to prevent third-party implementations of some public traits,
 // not exported publicly.
@@ -17,3 +17,4 @@ use crate::parse::Reader;
 pub trait Seal {}
 
 impl Seal for Reader<'_> {}
+impl Seal for Writer<'_> {}

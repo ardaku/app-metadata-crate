@@ -32,10 +32,45 @@ impl<'a> Writer<'a> {
 
             let more = remaining != T::ZERO;
 
-            self.0.push(if more { byte | 0x80 } else { byte & !0x80 });
+            self.u8(if more { byte | 0x80 } else { byte & !0x80 });
 
             more
         } {}
+    }
+
+    /// Write out a byte
+    pub fn u8(&mut self, byte: u8) {
+        self.0.push(byte);
+    }
+
+    /// Write out a little-endian encoded 2-byte integer.
+    pub fn u16(&mut self, int: u16) {
+        self.bytes(int.to_le_bytes());
+    }
+
+    /// Write out a little-endian encoded 4-byte integer.
+    pub fn u32(&mut self, int: u32) {
+        self.bytes(int.to_le_bytes());
+    }
+
+    /// Write out a little-endian encoded 8-byte integer.
+    pub fn u64(&mut self, int: u64) {
+        self.bytes(int.to_le_bytes());
+    }
+
+    /// Write out a little-endian encoded 16-byte integer.
+    pub fn u128(&mut self, int: u128) {
+        self.bytes(int.to_le_bytes());
+    }
+
+    /// Write out a UTF-8 string slice (does not include length).
+    pub fn str(&mut self, string: impl AsRef<str>) {
+        self.bytes(string.as_ref().as_bytes())
+    }
+
+    /// Write out raw bytes.
+    pub fn bytes(&mut self, bytes: impl AsRef<[u8]>) {
+        self.0.extend(bytes.as_ref())
     }
 }
 

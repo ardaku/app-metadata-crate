@@ -9,13 +9,13 @@
 
 use alloc::vec::Vec;
 
-use crate::daku::{Nucleide, Portals};
+use crate::daku::{Nucleide, Portal};
 
 /// Daku section
 #[derive(Debug)]
 pub struct Daku<'a> {
     /// List of portals required by the application.
-    pub portals: Portals<'a>,
+    pub portals: Vec<Portal>,
     /// List of nucleide metadata extension subsections for Nucleic desktop.
     pub nucleide: Vec<Nucleide<'a>>,
 }

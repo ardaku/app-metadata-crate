@@ -15,10 +15,11 @@ mod category;
 mod file;
 mod nucleide;
 mod portal;
-mod portals;
+mod read;
 mod section;
+mod write;
 
 pub use self::{
     category::Category, file::File, nucleide::Nucleide, portal::Portal,
-    portals::Portals, section::Daku,
+    read::Read, section::Daku, write::Write,
 };
