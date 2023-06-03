@@ -35,8 +35,8 @@ impl<'a> Read<'a> for Reader<'a> {
                 let software = (0..self.integer()?)
                     .map(|_| {
                         Some(VersionedSoftware {
-                            name: self.name()?,
-                            version: self.name()?,
+                            name: self.name()?.into(),
+                            version: self.name()?.into(),
                         })
                     })
                     .collect::<Option<_>>()?;

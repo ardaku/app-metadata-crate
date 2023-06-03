@@ -7,15 +7,15 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::vec::Vec;
+use alloc::{borrow::Cow, vec::Vec};
 
 /// Versioned software name
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct VersionedSoftware<'a> {
     /// Name of the program/application/tool
-    pub name: &'a str,
+    pub name: Cow<'a, str>,
     /// Version of the program/application/tool
-    pub version: &'a str,
+    pub version: Cow<'a, str>,
 }
 
 /// Kind of producer

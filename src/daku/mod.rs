@@ -11,8 +11,14 @@
 //!
 //! [daku]: https://ardaku.org/daku/
 
+mod category;
+mod file;
+mod nucleide;
 mod portal;
 mod portals;
 mod section;
 
-pub use self::{portal::Portal, portals::Portals, section::Daku};
+pub use self::{
+    category::Category, file::File, nucleide::Nucleide, portal::Portal,
+    portals::Portals, section::Daku,
+};

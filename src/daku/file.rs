@@ -7,15 +7,13 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::vec::Vec;
+use alloc::borrow::Cow;
 
-use crate::daku::{Nucleide, Portals};
-
-/// Daku section
+/// Metadata file (Nucleide extension)
 #[derive(Debug)]
-pub struct Daku<'a> {
-    /// List of portals required by the application.
-    pub portals: Portals<'a>,
-    /// List of nucleide metadata extension subsections for Nucleic desktop.
-    pub nucleide: Vec<Nucleide<'a>>,
+pub struct File<'a> {
+    /// The path of the file
+    pub path: Cow<'a, str>,
+    /// Data in the file
+    pub data: Cow<'a, [u8]>,
 }

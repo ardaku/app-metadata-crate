@@ -187,23 +187,23 @@ A `Vector` (limit 8), with each element containing:
 #### 6 => Searchable Categories
 A `Vector` (limit 2), with each element containing:
 
- - `tag: Name`: Name of the category, one of:
-   - `media` - Applications for playing / recording / editing audio, video,
+ - `tag: Byte`: App Category, one of:
+   - 0 => Media - Applications for playing / recording / editing audio, video,
      drawing, photos, fonts, 3D-modeling
-   - `office` - Applications for viewing / editing / translating documents and
+   - 1 => Office - Applications for viewing / editing / translating documents and
      spreadsheets
-   - `system` - Applications for inspecting the operating system, tweaking,
+   - 2 => System - Applications for inspecting the operating system, tweaking,
      installing, and virtualization
-   - `coding` - Applications for software development, math, related tools
-   - `internet` - Applications for browsing the web, peer-to-peer file sharing,
-     email, social media, etc.
-   - `gaming` - Applications for playing video games
-   - `science` - Applications for simulations, electrical/mechanical
+   - 3 => Coding - Applications for software development, math, related tools
+   - 4 => Internet - Applications for browsing the web, peer-to-peer file
+     sharing, email, social media, etc.
+   - 5 => Gaming - Applications for playing video games
+   - 6 => Science - Applications for simulations, electrical/mechanical
      engineering, A/I for inspecting data, robots
-   - `education` - Applications for education, learning
-   - `life` - Applications to-do lists, calendar, wellbeing, fitness,
+   - 7 => Education - Applications for education, learning
+   - 8 => Life - Applications to-do lists, calendar, wellbeing, fitness,
      directions, mapping, weather, smart home, etc.
-   - `finance` - Applications for coupons, buying/selling, trading, currency
+   - 9 => Finance - Applications for coupons, buying/selling, trading, currency
 
 #### 7 => Organization Name
 
