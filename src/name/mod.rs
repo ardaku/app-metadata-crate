@@ -13,5 +13,6 @@
 
 mod read;
 mod section;
+mod write;
 
-pub use self::{read::Read, section::Name};
+pub use self::{read::Read, section::Name, write::Write};

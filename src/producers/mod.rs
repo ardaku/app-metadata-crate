@@ -13,8 +13,10 @@
 
 mod producer;
 mod read;
+mod write;
 
 pub use self::{
     producer::{Producer, ProducerKind, VersionedSoftware},
     read::Read,
+    write::Write,
 };
