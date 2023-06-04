@@ -19,13 +19,16 @@ pub trait Write<'a>: Seal {
     /// Encode a WebAssembly "Name".
     fn name(&mut self, name: impl AsRef<str>);
 
+    /// Encode a WebAssembly "Vector" of "Name"s.
+    fn name_vector(&mut self, name_vector: &[Cow<'_, str>]);
+
     /// Encode a WebAssembly "Name Map".
-    fn name_map(&mut self, name_map: BTreeMap<u32, Cow<'_, str>>);
+    fn name_map(&mut self, name_map: &BTreeMap<u32, Cow<'_, str>>);
 
     /// Encode a WebAssembly "Indirect Name Map".
     fn indirect_name_map(
         &mut self,
-        indirect_name_map: BTreeMap<u32, BTreeMap<u32, Cow<'_, str>>>,
+        indirect_name_map: &BTreeMap<u32, BTreeMap<u32, Cow<'_, str>>>,
     );
 
     /// Encode a WebAssembly "Subsection"
@@ -44,23 +47,31 @@ impl<'a> Write<'a> for Writer<'a> {
         self.str(name);
     }
 
-    fn name_map(&mut self, name_map: BTreeMap<u32, Cow<'_, str>>) {
+    fn name_vector(&mut self, name_vector: &[Cow<'_, str>]) {
+        self.integer(name_vector.len().try_into().unwrap_or(u32::MAX));
+
+        for name in name_vector {
+            self.name(name);
+        }
+    }
+
+    fn name_map(&mut self, name_map: &BTreeMap<u32, Cow<'_, str>>) {
         self.integer(name_map.len().try_into().unwrap_or(u32::MAX));
 
         for (key, value) in name_map {
-            self.integer(key);
-            self.name(&value);
+            self.integer(*key);
+            self.name(value);
         }
     }
 
     fn indirect_name_map(
         &mut self,
-        indirect_name_map: BTreeMap<u32, BTreeMap<u32, Cow<'_, str>>>,
+        indirect_name_map: &BTreeMap<u32, BTreeMap<u32, Cow<'_, str>>>,
     ) {
         self.integer(indirect_name_map.len().try_into().unwrap_or(u32::MAX));
 
         for (key, value) in indirect_name_map {
-            self.integer(key);
+            self.integer(*key);
             self.name_map(value);
         }
     }

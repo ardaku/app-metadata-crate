@@ -64,9 +64,14 @@ impl<'a> Reader<'a> {
         Some(u128::from_le_bytes(value.get(..SIZE)?.try_into().ok()?))
     }
 
-    /// Parse a UTF-8 `String` of specified length
+    /// Read a number of raw bytes.
+    pub fn bytes(&mut self, len: usize) -> Option<&'a [u8]> {
+        self.subslice(len)?.get(..len)
+    }
+
+    /// Parse a UTF-8 `String` of specified length.
     pub fn str(&mut self, len: usize) -> Option<&'a str> {
-        str::from_utf8(self.subslice(len)?.get(..len)?).ok()
+        str::from_utf8(self.bytes(len)?).ok()
     }
 
     /// Return a `Reader` that reads up to the specified length.

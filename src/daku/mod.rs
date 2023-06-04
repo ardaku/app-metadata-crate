@@ -11,8 +11,6 @@
 //!
 //! [daku]: https://ardaku.org/daku/
 
-mod category;
-mod file;
 mod nucleide;
 mod portal;
 mod read;
@@ -20,6 +18,9 @@ mod section;
 mod write;
 
 pub use self::{
-    category::Category, file::File, nucleide::Nucleide, portal::Portal,
-    read::Read, section::Daku, write::Write,
+    nucleide::{Category, File, Nucleide},
+    portal::Portal,
+    read::Read,
+    section::Daku,
+    write::Write,
 };

@@ -7,29 +7,29 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::collections::BTreeMap;
+use alloc::{borrow::Cow, collections::BTreeMap};
 
 /// Name subsection
 #[derive(Debug)]
 pub enum Name<'a> {
     /// Module Name
-    Module(&'a str),
+    Module(Cow<'a, str>),
     /// Function Names
-    Function(BTreeMap<u32, &'a str>),
+    Function(BTreeMap<u32, Cow<'a, str>>),
     /// Local Names Per Function
-    Local(BTreeMap<u32, BTreeMap<u32, &'a str>>),
+    Local(BTreeMap<u32, BTreeMap<u32, Cow<'a, str>>>),
     /// Ext: Goto/Loop Label Names Per Function
-    Label(BTreeMap<u32, BTreeMap<u32, &'a str>>),
+    Label(BTreeMap<u32, BTreeMap<u32, Cow<'a, str>>>),
     /// Ext: Type Names
-    Type(BTreeMap<u32, &'a str>),
+    Type(BTreeMap<u32, Cow<'a, str>>),
     /// Ext: Table Names
-    Table(BTreeMap<u32, &'a str>),
+    Table(BTreeMap<u32, Cow<'a, str>>),
     /// Ext: Memory Names
-    Memory(BTreeMap<u32, &'a str>),
+    Memory(BTreeMap<u32, Cow<'a, str>>),
     /// Ext: Global Names
-    Global(BTreeMap<u32, &'a str>),
+    Global(BTreeMap<u32, Cow<'a, str>>),
     /// Ext: Element Names
-    Element(BTreeMap<u32, &'a str>),
+    Element(BTreeMap<u32, Cow<'a, str>>),
     /// Ext: Data Names
-    Data(BTreeMap<u32, &'a str>),
+    Data(BTreeMap<u32, Cow<'a, str>>),
 }

@@ -9,7 +9,48 @@
 
 use alloc::{borrow::Cow, collections::BTreeMap, vec::Vec};
 
-use crate::daku::{Category, File};
+use num_enum::{IntoPrimitive as Into, TryFromPrimitive as TryFrom};
+
+/// App category (Nucleide extension)
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, Into, TryFrom)]
+pub enum Category {
+    /// Applications for playing / recording / editing audio, video, drawing,
+    /// photos, fonts, 3D-modeling
+    Media = 0x00,
+    /// Applications for viewing / editing / translating documents and
+    /// spreadsheets
+    Office = 0x01,
+    /// Applications for inspecting the operating system, tweaking, installing,
+    /// and virtualization
+    System = 0x02,
+    /// Applications for software development, math, related tools
+    Coding = 0x03,
+    /// Applications for browsing the web, peer-to-peer file sharing, email,
+    /// social media, etc.
+    Internet = 0x04,
+    /// Applications for playing video games
+    Gaming = 0x05,
+    /// Applications for simulations, electrical/mechanical engineering, A/I
+    /// for inspecting data, robots
+    Science = 0x06,
+    /// Applications for education, learning
+    Education = 0x07,
+    /// Applications to-do lists, calendar, wellbeing, fitness, directions,
+    /// mapping, weather, smart home, etc.
+    Life = 0x08,
+    /// Applications for coupons, buying/selling, trading, currency
+    Finance = 0x09,
+}
+
+/// Metadata file (Nucleide extension)
+#[derive(Debug)]
+pub struct File<'a> {
+    /// The path of the file
+    pub path: Cow<'a, str>,
+    /// Data in the file
+    pub data: Cow<'a, [u8]>,
+}
 
 /// Nucleide subsection extension for Daku (for use with Nucleic desktop)
 #[derive(Debug)]
@@ -21,7 +62,7 @@ pub enum Nucleide<'a> {
     /// Icons for each theme (standard ones are "default" and "reduced")
     ThemedIcons(Vec<File<'a>>),
     /// Localized assets for the app Emporium
-    LocalizedAssets(BTreeMap<u32, Vec<File<'a>>>),
+    LocalizedAssets(BTreeMap<u32, File<'a>>),
     /// English lowercase words separated by spaces (no punctuation allowed)
     Tags(Vec<Cow<'a, str>>),
     /// App category for the Emporium (limit 2)

@@ -26,7 +26,7 @@ impl<'a> Read<'a> for Reader<'a> {
     fn producers(&mut self) -> Option<Vec<Producer<'a>>> {
         (0..self.integer()?)
             .map(|_| {
-                let kind = match self.name()? {
+                let kind = match &*self.name()? {
                     "language" => ProducerKind::Language,
                     "processed-by" => ProducerKind::ProcessedBy,
                     "sdk" => ProducerKind::Sdk,
@@ -35,8 +35,8 @@ impl<'a> Read<'a> for Reader<'a> {
                 let software = (0..self.integer()?)
                     .map(|_| {
                         Some(VersionedSoftware {
-                            name: self.name()?.into(),
-                            version: self.name()?.into(),
+                            name: self.name()?,
+                            version: self.name()?,
                         })
                     })
                     .collect::<Option<_>>()?;

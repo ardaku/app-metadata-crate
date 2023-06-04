@@ -7,7 +7,7 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::collections::BTreeMap;
+use alloc::{borrow::Cow, collections::BTreeMap, vec::Vec};
 
 use crate::{parse::Reader, seal::Seal};
 
@@ -17,15 +17,18 @@ pub trait Read<'a>: Seal {
     fn integer(&mut self) -> Option<u32>;
 
     /// Parse a WebAssembly "Name".
-    fn name(&mut self) -> Option<&'a str>;
+    fn name(&mut self) -> Option<Cow<'a, str>>;
+
+    /// Parse a WebAssembly "Vector" of "Name"s.
+    fn name_vector(&mut self) -> Option<Vec<Cow<'a, str>>>;
 
     /// Parse a WebAssembly "Name Map".
-    fn name_map(&mut self) -> Option<BTreeMap<u32, &'a str>>;
+    fn name_map(&mut self) -> Option<BTreeMap<u32, Cow<'a, str>>>;
 
     /// Parse a WebAssembly "Indirect Name Map".
     fn indirect_name_map(
         &mut self,
-    ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>>;
+    ) -> Option<BTreeMap<u32, BTreeMap<u32, Cow<'a, str>>>>;
 
     /// Parse a WebAssembly "Subsection"
     fn subsection(&mut self) -> Option<(u8, Reader<'a>)>;
@@ -55,13 +58,17 @@ impl<'a> Read<'a> for Reader<'a> {
         None
     }
 
-    fn name(&mut self) -> Option<&'a str> {
+    fn name(&mut self) -> Option<Cow<'a, str>> {
         let len = self.integer()?.try_into().ok()?;
 
-        self.str(len)
+        self.str(len).map(From::from)
     }
 
-    fn name_map(&mut self) -> Option<BTreeMap<u32, &'a str>> {
+    fn name_vector(&mut self) -> Option<Vec<Cow<'a, str>>> {
+        (0..self.integer()?).map(|_| self.name()).collect()
+    }
+
+    fn name_map(&mut self) -> Option<BTreeMap<u32, Cow<'a, str>>> {
         let mut name_map = BTreeMap::new();
 
         for _ in 0..self.integer()? {
@@ -73,7 +80,7 @@ impl<'a> Read<'a> for Reader<'a> {
 
     fn indirect_name_map(
         &mut self,
-    ) -> Option<BTreeMap<u32, BTreeMap<u32, &'a str>>> {
+    ) -> Option<BTreeMap<u32, BTreeMap<u32, Cow<'a, str>>>> {
         let mut indirect_name_map = BTreeMap::new();
 
         for _ in 0..self.integer()? {
