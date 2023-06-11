@@ -16,6 +16,15 @@ use crate::{
     producers::{Producer, Read as _, Write as _},
 };
 
+#[derive(Ord, PartialOrd, Eq, PartialEq)]
+#[repr(u8)]
+pub(crate) enum SectionKind {
+    Name = 0,
+    Producers = 1,
+    Daku = 2,
+    Unknown,
+}
+
 /// Custom section
 #[derive(Debug)]
 pub enum Section<'a> {

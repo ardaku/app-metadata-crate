@@ -42,4 +42,8 @@ mod seal;
 mod section;
 pub mod wasm;
 
-pub use self::{error::Error, module::Module, section::Section};
+pub use self::{
+    error::{Error, Result},
+    module::Module,
+    section::Section,
+};

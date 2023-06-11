@@ -7,24 +7,28 @@ fn main() {
         "../hello_world/target/wasm32-unknown-unknown/debug/hello_world.wasm",
     );
 
-    for section in Module::new(BYTES).expect("Bad WASM file").custom_sections()
+    for section in Module::new(BYTES)
+        .expect("Bad WASM file")
+        .sections()
+        .expect("Incorrect section order")
     {
         let name = section.name();
 
         // Try to downcast section from bytes to type-safe representation.
         let Some(section) = section.to() else {
             if name.starts_with(".debug_") {
-                println!("Skipping DWARF Debug Data Section: {name}");
+                println!("§ {name:?} — Skipping DWARF Debug Data");
+                println!();
                 continue;
             }
 
             // Either malformed or unknown
-            println!("Didn't know how to parse section {name}");
+            println!("§ {name:?} — Didn't know how to parse section");
+            println!();
             continue;
         };
 
         match section {
-            // FIXME: Name section must appear before producers if exists
             Section::Name(names) => {
                 println!("§ `name`");
                 println!("========");
