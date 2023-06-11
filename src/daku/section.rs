@@ -17,5 +17,5 @@ pub struct Daku<'a> {
     /// List of portals required by the application.
     pub portals: Vec<Portal>,
     /// List of nucleide metadata extension subsections for Nucleic desktop.
-    pub nucleide: Vec<Nucleide<'a>>,
+    pub nucleide: Option<Vec<Nucleide<'a>>>,
 }

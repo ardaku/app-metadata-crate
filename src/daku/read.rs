@@ -10,7 +10,7 @@
 use alloc::{collections::BTreeMap, vec::Vec};
 
 use crate::{
-    daku::{Category, File, Nucleide, Portal},
+    daku::{Category, Daku, File, Nucleide, Portal},
     parse::Reader,
     seal::Seal,
     wasm::Read as _,
@@ -18,6 +18,9 @@ use crate::{
 
 /// Daku section reader.
 pub trait Read<'a>: Seal {
+    /// Parse daku section.
+    fn daku(&mut self) -> Option<Daku<'a>>;
+
     /// Parse portals list from Daku section.
     fn portals(&mut self) -> Option<Vec<Portal>>;
 
@@ -41,6 +44,17 @@ pub trait Read<'a>: Seal {
 }
 
 impl<'a> Read<'a> for Reader<'a> {
+    fn daku(&mut self) -> Option<Daku<'a>> {
+        Some(Daku {
+            portals: self.portals()?,
+            nucleide: if self.end().is_none() {
+                Some(self.nucleide()?)
+            } else {
+                None
+            },
+        })
+    }
+
     fn portals(&mut self) -> Option<Vec<Portal>> {
         let size = self.integer()?.try_into().ok()?;
 

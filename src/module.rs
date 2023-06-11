@@ -24,8 +24,11 @@ impl Module {
     }
 
     /// Returns an iterator over the module’s custom sections.
+    ///
+    /// [`Section`]s are always yielded as the `Any` variant (borrowed).  They
+    /// can be parsed with [`Section::to()`].
     pub fn custom_sections(&self) -> impl Iterator<Item = Section<'_>> {
-        self.0.custom_sections().map(|section| Section {
+        self.0.custom_sections().map(|section| Section::Any {
             name: section.name().into(),
             data: section.payload().into(),
         })
@@ -33,9 +36,15 @@ impl Module {
 
     /// Sets the payload associated with the given custom section, or adds a new
     /// custom section, as appropriate.
-    pub fn set_custom_section(&mut self, section: Section<'_>) {
-        self.0
-            .set_custom_section(section.name, section.data.to_vec())
+    pub fn set_custom_section(
+        &mut self,
+        mut section: Section<'_>,
+    ) -> Option<()> {
+        let (name, data) = section.to_any()?;
+
+        self.0.set_custom_section(name, data.to_vec());
+
+        Some(())
     }
 
     /// Removes the given custom section, if it exists. Returns the removed
@@ -52,11 +61,5 @@ impl Module {
         let mut v = Vec::new();
         self.0.serialize(&mut v).map_err(Error)?;
         Ok(v)
-    }
-
-    #[allow(dead_code)] // FIXME
-    fn daku_section(&self) -> Option<Section<'_>> {
-        self.custom_sections()
-            .find(|section| section.name == "daku")
     }
 }

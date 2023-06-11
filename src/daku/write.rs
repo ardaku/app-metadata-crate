@@ -10,7 +10,7 @@
 use alloc::collections::BTreeMap;
 
 use crate::{
-    daku::{Category, File, Nucleide, Portal},
+    daku::{Category, Daku, File, Nucleide, Portal},
     parse::Writer,
     seal::Seal,
     wasm::Write as _,
@@ -18,6 +18,9 @@ use crate::{
 
 /// Daku section  writer.
 pub trait Write<'a>: Seal {
+    /// Write out daku section.
+    fn daku(&mut self, daku: &Daku<'_>) -> Option<()>;
+
     /// Write out portals list from Daku section.
     fn portals(&mut self, portals: &[Portal]);
 
@@ -41,6 +44,16 @@ pub trait Write<'a>: Seal {
 }
 
 impl<'a> Write<'a> for Writer<'a> {
+    fn daku(&mut self, daku: &Daku<'_>) -> Option<()> {
+        self.portals(daku.portals.as_slice());
+
+        if let Some(ref nucleide) = daku.nucleide {
+            self.nucleide(nucleide.as_slice())?;
+        }
+
+        Some(())
+    }
+
     fn portals(&mut self, portals: &[Portal]) {
         // Write vector length
         self.integer(portals.len().try_into().unwrap_or(u32::MAX));
