@@ -1,13 +1,17 @@
+use std::{env, fs};
+
 use nucleide::{
     daku::Nucleide, name::Name, producers::ProducerKind, Module, Section,
 };
 
 fn main() {
-    const BYTES: &[u8] = include_bytes!(
-        "../hello_world/target/wasm32-unknown-unknown/debug/hello_world.wasm",
-    );
+    let path = env::args()
+        .skip(1)
+        .next()
+        .expect("Need to provide wasm file");
+    let bytes = fs::read(path).expect("Could not open file");
 
-    for section in Module::new(BYTES)
+    for section in Module::new(bytes.as_slice())
         .expect("Bad WASM file")
         .sections()
         .expect("Incorrect section order")
@@ -31,7 +35,7 @@ fn main() {
         match section {
             Section::Name(names) => {
                 println!("§ `name`");
-                println!("========");
+                println!("————————");
                 for name in names {
                     match name {
                         Name::Module(name) => {
@@ -97,7 +101,7 @@ fn main() {
             }
             Section::Producers(producers) => {
                 println!("§ `producers`");
-                println!("=============");
+                println!("—————————————");
 
                 for producer_group in producers {
                     let kind = match producer_group.kind {
@@ -120,7 +124,7 @@ fn main() {
             }
             Section::Daku(daku) => {
                 println!("§ `daku`");
-                println!("========");
+                println!("————————");
                 println!(" • Portals:");
 
                 for portal in daku.portals {
