@@ -6,8 +6,7 @@ use nucleide::{
 
 fn main() {
     let path = env::args()
-        .skip(1)
-        .next()
+        .nth(1)
         .expect("Need to provide wasm file");
     let bytes = fs::read(path).expect("Could not open file");
 
