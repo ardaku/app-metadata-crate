@@ -7,9 +7,10 @@
 // At your choosing (See accompanying files LICENSE_APACHE_2_0.txt,
 // LICENSE_MIT.txt and LICENSE_BOOST_1_0.txt).
 
-use alloc::vec::Vec;
+use alloc::{string::String, vec::Vec};
+use core::mem;
 
-use parity_wasm::elements::{self, CustomSection, Serialize};
+use parity_wasm::elements::{self, Serialize};
 
 use crate::{section::SectionKind, Error, Result, Section};
 
@@ -70,8 +71,17 @@ impl Module {
     pub fn clear_section(
         &mut self,
         name: impl AsRef<str>,
-    ) -> Option<CustomSection> {
-        self.0.clear_custom_section(name)
+    ) -> Option<Section<'static>> {
+        let mut section = self.0.clear_custom_section(&name)?;
+        let (mut name, mut data) = (String::new(), Vec::new());
+
+        mem::swap(&mut name, section.name_mut());
+        mem::swap(&mut data, section.payload_mut());
+
+        Some(Section::Any {
+            name: name.into(),
+            data: data.into(),
+        })
     }
 
     /// Write out module to a `Vec` of bytes.
