@@ -11,17 +11,70 @@ use alloc::{string::String, vec::Vec};
 use core::mem;
 
 use parity_wasm::elements::{self, Serialize};
+use num_enum::{IntoPrimitive as Into, TryFromPrimitive as TryFrom};
 
-use crate::{section::SectionKind, Error, Result, Section};
+use crate::{section::SectionKind, Error, Result, Section, parse::Reader, wasm::Read as _};
 
-/// Represents WebAssembly module. Use new to build from buffer.
+/// A WebAssembly module (or part of one).
+///
+/// Use [`Module::new`] to build from a buffer.
 #[derive(Debug)]
-pub struct Module(elements::Module);
+pub struct Module<'a> {
+    module: elements::Module,
+    buf: &'a [u8],
+}
 
-impl Module {
+impl<'a> Module<'a> {
     /// Creates a Module from buffer.
-    pub fn new(buf: &[u8]) -> Result<Self> {
-        Ok(Module(elements::Module::from_bytes(buf).map_err(Error)?))
+    pub fn new(buf: &'a [u8]) -> Result<Self> {
+        const MAGIC: &[u8; 4] = b"\0asm";
+        const VERSION: u32 = 1;
+
+        const EOF: Error = Error::with_msg("End of file");
+        const MAGIC_ERR: Error = Error::with_msg("Unexpected magic bytes");
+        const VERSION_ERR: Error = Error::with_msg("Unknown WASM version");
+
+        let mut reader = Reader::new(buf);
+        let magic = reader.bytes(4).ok_or(EOF)?;
+        let version = reader.u32().ok_or(EOF)?;
+
+        (magic == MAGIC).then_some(()).ok_or(MAGIC_ERR)?;
+        (version == VERSION).then_some(()).ok_or(VERSION_ERR)?;
+
+        // FIXME: Testing
+        #[derive(Into, TryFrom, Debug)]
+        #[repr(u8)]
+        enum SectionId {
+            Custom = 0,
+            Type = 1,
+            Import = 2,
+            Function = 3,
+            Table = 4,
+            Memory = 5,
+            Global = 6,
+            Export = 7,
+            Start = 8,
+            Element = 9,
+            Code = 10,
+            Data = 11,
+            DataCount = 12,
+        }
+        let mut dbg = String::new();
+        while reader.end().is_none() {
+            let id = reader.u8().ok_or(EOF)?;
+            let id = SectionId::try_from(id).map_err(|_| Error::with_msg("Invalid section ID: {id}"))?;
+            let size = reader.integer().ok_or(EOF)?;
+            let size = size.try_into().map_err(|_| Error::with_msg("Not enough memory"))?;
+            let _reader = reader.reader(size).ok_or(EOF)?;
+
+            dbg.push_str(&alloc::format!("\n{id:?}; {size} bytes"));
+        }
+        panic!("{dbg}");
+
+        Ok(Self {
+            module: elements::Module::from_bytes(buf).map_err(Error)?,
+            buf,
+        })
     }
 
     /// Returns an iterator over the module’s custom sections.
@@ -32,9 +85,9 @@ impl Module {
         const ERROR_MESSAGE: Error = Error::with_msg("Incorrect Section Order");
 
         let mut kind = SectionKind::Name;
-        let iter = self.0.custom_sections();
+        let iter = self.module.custom_sections();
 
-        for section in self.0.custom_sections() {
+        for section in self.module.custom_sections() {
             match section.name() {
                 "name" if kind <= SectionKind::Name => {
                     kind = SectionKind::Producers
@@ -61,7 +114,7 @@ impl Module {
     pub fn set_section(&mut self, mut section: Section<'_>) -> Option<()> {
         let (name, data) = section.to_any()?;
 
-        self.0.set_custom_section(name, data.to_vec());
+        self.module.set_custom_section(name, data.to_vec());
 
         Some(())
     }
@@ -72,7 +125,7 @@ impl Module {
         &mut self,
         name: impl AsRef<str>,
     ) -> Option<Section<'static>> {
-        let mut section = self.0.clear_custom_section(&name)?;
+        let mut section = self.module.clear_custom_section(&name)?;
         let (mut name, mut data) = (String::new(), Vec::new());
 
         mem::swap(&mut name, section.name_mut());
@@ -87,7 +140,9 @@ impl Module {
     /// Write out module to a `Vec` of bytes.
     pub fn into_buffer(self) -> Result<Vec<u8>> {
         let mut v = Vec::new();
-        self.0.serialize(&mut v).map_err(Error)?;
+
+        self.module.serialize(&mut v).map_err(Error)?;
+
         Ok(v)
     }
 }
